@@ -45,7 +45,7 @@ dependencies {
 
 jib {
     val user = System.getenv("DOCKER_USERNAME")
-    val pass = System.getenv("DOCKER_PASSWORDTan")
+    val pass = System.getenv("DOCKER_PASSWORD")
     from {
         image = "amazoncorretto:19"
         auth {
