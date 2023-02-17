@@ -386,6 +386,7 @@ public class InteractionCommandHandler {
             event.replyEmbeds(embed.build()).setEphemeral(true).queue();
             return;
         }
+        if (command.getCommandFlags() == null || command.getCommandFlags().isEmpty()) return;
         if (command.getCommandFlags().contains(CommandFlag.MUSIC)) {
             if (event.getChannelType().equals(ChannelType.VOICE)) {
                 GuildVoiceState guildVoiceState = member.getVoiceState();
