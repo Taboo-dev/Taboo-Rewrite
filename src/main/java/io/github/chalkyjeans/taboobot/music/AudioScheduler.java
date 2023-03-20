@@ -28,14 +28,15 @@ public class AudioScheduler extends PlayerEventListenerAdapter {
     private final JdaLink link;
     private final BlockingQueue<AudioTrack> queue;
     private final long guildId;
+    @Setter private LoopState loopState;
     @Setter private long channelId;
-    @Setter private boolean repeat = false;
 
     public AudioScheduler(LavalinkPlayer player, long guildId) {
         this.guildId = guildId;
         this.queue = new LinkedBlockingQueue<>();
         this.link = TabooBot.getInstance().getLavalink().getLink(guildId);
         this.player = link.getPlayer();
+        this.loopState = LoopState.OFF;
         player.addListener(this);
     }
 
@@ -93,6 +94,7 @@ public class AudioScheduler extends PlayerEventListenerAdapter {
         AudioTrackInfo info = track.getInfo();
         long length = info.getLength();
         String duration = MusicUtil.toMinutesAndSeconds(length);
+        boolean repeat = loopState == LoopState.TRACK || loopState == LoopState.QUEUE;
         if (!repeat) {
             EmbedBuilder embed = new EmbedBuilder()
                     .setTitle("Now Playing:")
@@ -121,24 +123,34 @@ public class AudioScheduler extends PlayerEventListenerAdapter {
         if (endReason.mayStartNext) {
             AudioTrackInfo info = track.getInfo();
             String description = String.format("[%s](%s) by %s", info.getTitle(), info.getUri(), info.getAuthor());
-            if (repeat) {
-                player.playTrack(track);
-                MessageEmbed embed = new EmbedBuilder()
-                        .setTitle("Looping:")
-                        .setDescription(description)
-                        .setColor(0x9F90CF)
-                        .setTimestamp(Instant.now())
-                        .build();
-                channel.sendMessageEmbeds(embed).queue();
-            } else {
-                MessageEmbed embed = new EmbedBuilder()
-                        .setTitle("Track Ended:")
-                        .setDescription(description)
-                        .setColor(0x9F90CF)
-                        .setTimestamp(Instant.now())
-                        .build();
-                channel.sendMessageEmbeds(embed).queue();
-                nextTrack();
+            switch (loopState) {
+                case OFF -> {
+                    MessageEmbed embed = new EmbedBuilder()
+                            .setTitle("Track Ended:")
+                            .setDescription(description)
+                            .setColor(0x9F90CF)
+                            .setTimestamp(Instant.now())
+                            .build();
+                    channel.sendMessageEmbeds(embed).queue();
+                    nextTrack();
+                }
+                case TRACK -> {
+                    player.playTrack(track);
+                    MessageEmbed embed = new EmbedBuilder()
+                            .setTitle("Looping:")
+                            .setDescription(description)
+                            .setColor(0x9F90CF)
+                            .setTimestamp(Instant.now())
+                            .build();
+                    channel.sendMessageEmbeds(embed).queue();
+                }
+                case QUEUE -> {
+                    BlockingQueue<AudioTrack> clone = new LinkedBlockingQueue<>(queue);
+                    queue.clear();
+                    queue.offer(track);
+                    queue.addAll(clone);
+
+                }
             }
         }
     }

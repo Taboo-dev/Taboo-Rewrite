@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.DV8FromTheWorld:JDA:v5.0.0-beta.3")
+    implementation("com.github.DV8FromTheWorld:JDA:v5.0.0-beta.6")
     implementation("com.github.MinnDevelopment:discord-webhooks:e7e5db7d2d")
     implementation("com.github.chalkyjeans:Lavalink-Client:jdav5-artworkurl") {
         exclude(mapOf("group" to "net.dv8tion", "module" to "JDA"))

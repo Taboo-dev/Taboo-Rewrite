@@ -4,6 +4,7 @@ import io.github.chalkyjeans.taboobot.backend.TabooAPI;
 import io.github.chalkyjeans.taboobot.bot.TabooBot;
 import io.github.chalkyjeans.taboobot.music.AudioScheduler;
 import io.github.chalkyjeans.taboobot.music.GuildAudioPlayer;
+import io.github.chalkyjeans.taboobot.music.LoopState;
 import io.github.chalkyjeans.taboobot.music.MusicUtil;
 import io.github.chalkyjeans.taboobot.util.objects.Bookmark;
 import lavalink.client.player.LavalinkPlayer;
@@ -77,25 +78,38 @@ public class MusicEvents extends ListenerAdapter {
             }
             case "loop" -> {
                 // componentId = music:loop:<channelId>:<trackIdentifier>
-                boolean repeat = scheduler.isRepeat();
-                if (repeat) {
-                    scheduler.setRepeat(false);
-                    MessageEmbed embed = new EmbedBuilder()
-                            .setTitle("No longer looping")
-                            .setDescription("Looping is now disabled")
-                            .setColor(0x9F90CF)
-                            .setTimestamp(Instant.now())
-                            .build();
-                    event.getHook().sendMessageEmbeds(embed).queue();
-                } else {
-                    scheduler.setRepeat(true);
-                    MessageEmbed embed = new EmbedBuilder()
-                            .setTitle("Looping")
-                            .setDescription("Looping is now enabled")
-                            .setColor(0x9F90CF)
-                            .setTimestamp(Instant.now())
-                            .build();
-                    event.getHook().sendMessageEmbeds(embed).queue();
+                LoopState loopState = scheduler.getLoopState();
+                switch (loopState) {
+                    case OFF -> {
+                        scheduler.setLoopState(LoopState.TRACK);
+                        MessageEmbed embed = new EmbedBuilder()
+                                .setTitle("Looping Track")
+                                .setDescription("Looping is now enabled")
+                                .setColor(0x9F90CF)
+                                .setTimestamp(Instant.now())
+                                .build();
+                        event.getHook().sendMessageEmbeds(embed).queue();
+                    }
+                    case TRACK -> {
+                        scheduler.setLoopState(LoopState.QUEUE);
+                        MessageEmbed embed = new EmbedBuilder()
+                                .setTitle("Looping Queue")
+                                .setDescription("Looping is now enabled")
+                                .setColor(0x9F90CF)
+                                .setTimestamp(Instant.now())
+                                .build();
+                        event.getHook().sendMessageEmbeds(embed).queue();
+                    }
+                    case QUEUE -> {
+                        scheduler.setLoopState(LoopState.OFF);
+                        MessageEmbed embed = new EmbedBuilder()
+                                .setTitle("No longer looping")
+                                .setDescription("Looping is now disabled")
+                                .setColor(0x9F90CF)
+                                .setTimestamp(Instant.now())
+                                .build();
+                        event.getHook().sendMessageEmbeds(embed).queue();
+                    }
                 }
             }
             case "shuffle" -> {

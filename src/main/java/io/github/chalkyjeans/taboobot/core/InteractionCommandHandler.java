@@ -233,7 +233,9 @@ public class InteractionCommandHandler {
                     .filter(cmd -> cmd instanceof MessageContextCommand)
                     .map(cmd -> (MessageContextCommand) cmd)
                     .toList();
-            MessageContextCommand guildCommand = guildCommands.stream().filter(cmd -> cmd.getCommandData().getName().equalsIgnoreCase(event.getName()))
+            MessageContextCommand guildCommand = guildCommands
+                    .stream()
+                    .filter(cmd -> cmd.getCommandData().getName().equalsIgnoreCase(event.getName()))
                     .findFirst()
                     .orElse(null);
             if (guildCommand != null)
